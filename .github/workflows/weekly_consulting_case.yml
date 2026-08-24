@@ -1,0 +1,65 @@
+name: Weekly AI Consulting Case
+
+on:
+  schedule:
+    # Sunday ~09:00 UK time. GitHub Actions cron is fixed-UTC with no DST
+    # awareness, so this is split into two lines to track BST/GMT:
+    - cron: '0 8 * 3-10 0'      # ~09:00 BST (UTC+1), roughly Mar-Oct
+    - cron: '0 9 * 1,2,11,12 0' # ~09:00 GMT (UTC+0), roughly Nov-Feb
+    # Actual UK DST transition is the last Sunday of March/October, so the
+    # run can land up to ~1hr off local 9am for a few days each year around
+    # the transition.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  run-weekly-consulting-case:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set up Node (for Claude Code CLI)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Write credentials from secrets
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          KIE_AI_API_KEY: ${{ secrets.KIE_AI_API_KEY }}
+        run: |
+          printf '%s' "$GOOGLE_SERVICE_ACCOUNT_JSON" > service_account.json
+          {
+            echo "GMAIL_ADDRESS=$GMAIL_ADDRESS"
+            echo "GMAIL_APP_PASSWORD=$GMAIL_APP_PASSWORD"
+            echo "KIE_AI_API_KEY=$KIE_AI_API_KEY"
+          } > .env
+
+      - name: Run weekly consulting case
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          claude -p "$(cat workflows/weekly_consulting_case.md)" \
+            --allowedTools "WebSearch WebFetch Bash Read Write Edit" \
+            --dangerously-skip-permissions
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f service_account.json .env

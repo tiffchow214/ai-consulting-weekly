@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "new_ai_apps",
+			"path": "../new_ai_apps"
+		}
+	],
+	"settings": {}
+}
