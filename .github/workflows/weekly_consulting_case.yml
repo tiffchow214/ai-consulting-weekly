@@ -20,10 +20,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11'
 
@@ -31,9 +31,9 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Set up Node (for Claude Code CLI)
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Install Claude Code CLI
         run: npm install -g @anthropic-ai/claude-code
@@ -56,7 +56,10 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          claude -p "$(cat workflows/weekly_consulting_case.md)" \
+          PROMPT="This is an unattended CI run with no user available to reply. Execute the following workflow now, start to finish, without asking for confirmation:
+
+          $(cat workflows/weekly_consulting_case.md)"
+          claude -p "$PROMPT" \
             --allowedTools "WebSearch WebFetch Bash Read Write Edit" \
             --dangerously-skip-permissions
 

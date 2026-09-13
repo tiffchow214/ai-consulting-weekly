@@ -38,6 +38,9 @@ When you hit an error:
 **3. Keep workflows current**
 Workflows should evolve as you learn. When you find better methods, discover constraints, or encounter recurring issues, update the workflow. That said, don't create or overwrite workflows without asking unless I explicitly tell you to. These are your instructions and need to be preserved and refined, not tossed after one use.
 
+**4. Watch token/context spend**
+Use the `token-optimizer` skill to audit context-window and token usage in this project (e.g. `/token-optimizer:quick` for a fast health check, `/token-optimizer:token-optimizer` for a full audit) when a session feels bloated or before scaling up recurring runs like the weekly consulting case.
+
 ## The Self-Improvement Loop
 
 Every failure is a chance to make the system stronger:
