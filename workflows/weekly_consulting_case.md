@@ -421,13 +421,23 @@ python tools/build_deck.py .tmp/weekly_deck_content.json .tmp
 `build_deck.py` computes its own output filename from the JSON's
 `date`/`case`/`client` fields — `{date}_{case-slug}_{client-slug}.pptx` —
 and prints the full path on success. Read that exact path from the command
-output and use it verbatim as the `--attach` argument below. Before
-attaching, verify it's a valid zip (see Edge Cases — iCloud sync race
-condition):
+output and use it verbatim in the QA gate call and the `--attach` argument
+below.
+
+Before sending, run the QA gate — a single deterministic-plus-LLM-judge
+pass over the finished newsletter and deck (see Edge Cases below for the
+FAIL path). This also covers the iCloud-sync-race pptx zip-validity check
+that used to be a standalone command here:
 
 ```bash
-python3 -c "import zipfile; zipfile.ZipFile('<path>').testzip()"  # must print None
+python tools/evaluate_output.py \
+  --newsletter .tmp/newsletter.html \
+  --deck-json .tmp/weekly_deck_content.json \
+  --deck-pptx <path printed by build_deck.py>
 ```
+
+Prints `{"pass": bool, "issues": [...], "llm_judge": {...}}` as JSON and
+exits non-zero on FAIL. **Only proceed to `send_email.py` if this exits 0.**
 
 ```bash
 python tools/send_email.py \
@@ -456,8 +466,21 @@ python tools/manage_sheet.py tracker-append \
   --concepts "five whys,class imbalance" \
   --production-concepts "monitoring,drift,rollback" \
   --difficulty "Understand|Apply|Design-Defend" \
-  --challenge-type "real-case extension|related scenario|vignette"
+  --challenge-type "real-case extension|related scenario|vignette" \
+  --qa-gate-result "Pass|Fail" \
+  --qa-issues-count <N>
 ```
+
+`--qa-gate-result` and `--qa-issues-count` come straight from
+`evaluate_output.py`'s own JSON output for this run (`pass` → `Pass`/`Fail`,
+`len(issues)`) — the mechanically-computed counterpart to the self-reported
+`--evidence-quality` flag above. Since `tracker-append` only runs after
+`send_email.py` exits 0, and the QA gate already gated the send,
+`qa_gate_result` will be `Pass` on essentially every logged row by
+construction; the useful signal for `tracker-summary` (see
+`tools/manage_sheet.py`) is `qa_issues_count` trending over time (near-misses
+that still passed) and any historical blank values from before this feature
+existed.
 
 `--lenses` is comma-separated, using the exact lens names from
 `workflows/consulting_framework.md` (`ML Decision`, `Impact & Causal
@@ -534,15 +557,26 @@ python tools/manage_sheet.py glossary-append \
 - **`build_deck.py` fails** (malformed JSON, missing required fields,
   invalid `comparison` slide data) — read the full error, fix the JSON
   content, and retry. Do not fall back to a text-only email.
+- **`evaluate_output.py` reports FAIL** — read the `issues` list. If the
+  issues are fixable by revising the newsletter/deck content (e.g. an
+  unlabeled claim, a suspiciously precise unlabeled statistic), retry the
+  drafting step **once**, addressing every flagged issue specifically, then
+  rebuild the deck and re-run the QA gate. If it fails a second time, or the
+  issue is structural/unfixable within this run (e.g. the judge flags the
+  case itself as thin/duplicate-ish), **abort without sending and without
+  appending to the tracker** — surface the full issue list so the run
+  visibly fails, exactly as an unattended `send_email.py` failure would.
+  Never send on a FAIL, and never retry more than once (same "no silent or
+  repeated retries" discipline as `send_email.py`).
 - **`excalidraw-visuals` generation fails** — retry once with a simplified
   prompt if it looks like a content/spelling issue, otherwise surface the
   failure. Do not substitute a text/bullet slide for a diagram.
 - **iCloud sync race condition** — this project's directory sits under
   iCloud-synced `~/Desktop`. A built `.pptx` can grow/become an invalid zip
-  between `build_deck.py` finishing and the attach step. Always verify the
-  file is a valid zip before attaching; if invalid, rebuild and re-verify,
-  or copy the freshly-built file to a non-synced scratch path immediately
-  before attaching.
+  between `build_deck.py` finishing and the attach step; `evaluate_output.py`
+  checks this as part of the QA gate. If it reports a corrupt zip, rebuild
+  and re-run the gate, or copy the freshly-built file to a non-synced
+  scratch path immediately before re-checking and attaching.
 - **`send_email.py` fails** — read the full error; do not retry beyond the
   tool's own internal single retry. Do **not** mark the week complete in
   the tracker.
@@ -559,6 +593,6 @@ python tools/manage_sheet.py glossary-append \
 - **Multiple valid answers to the challenge** — explain in the Model
   Approach section why different recommendations could be defensible.
 - **Paid API failure** (WebSearch/WebFetch, model calls, kie.ai diagram
-  generation) — expected costs of a normal run; don't check in before
-  making them. Do check in before *repeatedly* retrying a call that keeps
-  failing.
+  generation, `evaluate_output.py`'s LLM-judge call) — expected costs of a
+  normal run; don't check in before making them. Do check in before
+  *repeatedly* retrying a call that keeps failing.

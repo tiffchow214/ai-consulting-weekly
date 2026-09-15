@@ -9,14 +9,17 @@ Usage:
         --lenses "ML Decision,Marketplace" \\
         --concepts "five whys,class imbalance" \\
         --production-concepts "monitoring,drift" \\
-        --difficulty "Apply" --challenge-type "real-case extension"
+        --difficulty "Apply" --challenge-type "real-case extension" \\
+        --qa-gate-result "Pass" --qa-issues-count 0
+    python tools/manage_sheet.py tracker-summary [--last-n 12]
     python tools/manage_sheet.py glossary-read
     python tools/manage_sheet.py glossary-append --term "double diamond" \\
         --definition "..." --week 1 --topic "Problem framing"
 
 Two tabs, same spreadsheet:
 - Tracker: week_number, date, consultancy, client_or_case, industry,
-  curriculum_topic, pass, key_takeaway, evidence_quality, lenses_used.
+  curriculum_topic, pass, key_takeaway, evidence_quality, lenses_used,
+  qa_gate_result, qa_issues_count.
   Client/case has no repeat gate structurally, but the agent should check
   tracker-read for a duplicate client_or_case before committing to a new
   case (see workflows/weekly_consulting_case.md). curriculum_topic follows a
@@ -39,7 +42,13 @@ Two tabs, same spreadsheet:
   distinct from the numeric pass column. challenge_type records which of
   the Weekly challenge sourcing options (real-case extension / related
   scenario / vignette — see workflows/consulting_framework.md) supplied
-  that week's "Your Turn".
+  that week's "Your Turn". qa_gate_result (Pass/Fail) and qa_issues_count
+  are the mechanically-computed counterpart to the self-reported
+  evidence_quality flag, sourced from tools/evaluate_output.py's JSON output
+  for this run — both get logged side by side, neither overrides the other.
+  These two columns were added after the tracker already had real data;
+  read_rows()'s short-row padding means historical rows simply read back
+  with these fields empty, no migration needed.
 - Glossary: term, definition, first_seen_week, first_seen_topic. Lets the
   newsletter/deck reference a term briefly ("double diamond — see Week 1")
   once it's already been defined, instead of re-explaining or duplicating it.
@@ -82,6 +91,7 @@ TRACKER_HEADER = [
     "curriculum_topic", "pass", "key_takeaway", "evidence_quality",
     "lenses_used", "concepts_practised", "production_concepts",
     "difficulty", "challenge_type",
+    "qa_gate_result", "qa_issues_count",
 ]
 GLOSSARY_HEADER = ["term", "definition", "first_seen_week", "first_seen_topic"]
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -185,6 +195,36 @@ def append_row(service, sheet_id: str, tab: str, header: list[str], values: list
     ).execute()
 
 
+def summarize_tracker(rows: list[dict], last_n: int | None = None) -> dict:
+    """Pure function — takes rows already returned by read_rows(), no I/O of
+    its own. Aggregates the mechanically-computed qa_gate_result alongside
+    the self-reported evidence_quality flag so trends (e.g. issues creeping
+    up even on Pass weeks) become visible over time. Rows are in tracker
+    order (append-only), so the last N rows are the most recent N weeks."""
+    sliced = rows[-last_n:] if last_n is not None else rows
+
+    qa_gate_counts: dict[str, int] = {}
+    evidence_quality_counts: dict[str, int] = {}
+    issue_counts = []
+
+    for row in sliced:
+        qa_gate_counts[row.get("qa_gate_result", "")] = qa_gate_counts.get(row.get("qa_gate_result", ""), 0) + 1
+        evidence_quality_counts[row.get("evidence_quality", "")] = evidence_quality_counts.get(row.get("evidence_quality", ""), 0) + 1
+        raw_count = row.get("qa_issues_count", "")
+        if raw_count not in ("", None):
+            try:
+                issue_counts.append(int(raw_count))
+            except ValueError:
+                pass
+
+    return {
+        "weeks_counted": len(sliced),
+        "qa_gate": qa_gate_counts,
+        "evidence_quality": evidence_quality_counts,
+        "avg_qa_issues_count": (sum(issue_counts) / len(issue_counts)) if issue_counts else None,
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -206,6 +246,11 @@ def main() -> None:
     tracker_append.add_argument("--production-concepts", dest="production_concepts", default="", help="Optional comma-separated production-lifecycle concepts practiced this week; empty if none.")
     tracker_append.add_argument("--difficulty", default="", help="Optional free-text difficulty tier, e.g. Understand / Apply / Design-Defend.")
     tracker_append.add_argument("--challenge-type", dest="challenge_type", default="", help="Optional: real-case extension / related scenario / vignette.")
+    tracker_append.add_argument("--qa-gate-result", dest="qa_gate_result", default="", help="Pass/Fail from tools/evaluate_output.py's most recent run this week.")
+    tracker_append.add_argument("--qa-issues-count", dest="qa_issues_count", type=int, default=0, help="Count of issues evaluate_output.py flagged (0 if Pass or gate skipped).")
+
+    tracker_summary = subparsers.add_parser("tracker-summary", help="Print an aggregate view of recent tracker rows.")
+    tracker_summary.add_argument("--last-n", dest="last_n", type=int, default=None, help="Only summarize the last N rows (default: all rows).")
 
     subparsers.add_parser("glossary-read", help="Print the current glossary as JSON.")
 
@@ -240,13 +285,18 @@ def main() -> None:
                 args.key_takeaway, args.evidence_quality, args.lenses_used,
                 args.concepts_practised, args.production_concepts,
                 args.difficulty, args.challenge_type,
+                args.qa_gate_result, str(args.qa_issues_count),
             ])
             print(
                 f"Appended week {args.week_num}: {args.date} — consultancy={args.consultancy!r} "
                 f"client={args.client_or_case!r} industry={args.industry!r} "
                 f"topic={args.curriculum_topic!r} pass={args.pass_num} "
-                f"lenses={args.lenses_used!r}"
+                f"lenses={args.lenses_used!r} qa_gate={args.qa_gate_result!r}"
             )
+
+        elif args.command == "tracker-summary":
+            rows = read_rows(service, sheet_id, tracker_tab, TRACKER_HEADER)
+            print(json.dumps(summarize_tracker(rows, args.last_n), indent=2))
 
         elif args.command == "glossary-read":
             print(json.dumps(read_rows(service, sheet_id, GLOSSARY_TAB, GLOSSARY_HEADER), indent=2))
