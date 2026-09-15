@@ -52,13 +52,20 @@ every "Model Approach" section) should be checked against:
 ```
 Problem
   ↓
-Stakeholders & Objectives      — who wants what, what does success look like to them
+Stakeholders & Objectives      — who wants what, what does success look like
+                                  to them (see AI Value Discovery Framework
+                                  below — User-Centred Discovery)
   ↓
 Process                        — where does the work actually happen today
+                                  (see AI Value Discovery Framework below —
+                                  Business Process Mapping)
   ↓
 Root Cause                     — why is the problem happening
   ↓
 Opportunity                    — where could technology/process redesign help
+                                  (see AI Value Discovery Framework below —
+                                  AI Use-Case Prioritisation, once more than
+                                  one candidate opportunity exists)
   ↓
 Options                        — incl. non-AI, build/buy, RAG/LLM/agent, ML/DL
   ↓
@@ -82,9 +89,13 @@ Value & ROI                    — per option, before committing to one. Any
                                   decision is a causal "did this work"
                                   question rather than a prediction, this is
                                   where the Impact & Causal Inference Lens
-                                  gets checked for activation.
+                                  gets checked for activation. (See AI Value
+                                  Discovery Framework below — Benefits
+                                  Mapping & Business Case.)
   ↓
-Risk                           — per option, before committing to one
+Risk                           — per option, before committing to one (see
+                                  AI Value Discovery Framework below —
+                                  Responsible AI & Assurance)
   ↓
 Recommendation                 — now defensible, because value/risk/
                                   feasibility were assessed first. "No
@@ -606,6 +617,112 @@ causation, and Bayesian reasoning. Teach each concept in service of the
 decision it supports (same discipline as Metric Selection above), never as
 a bare statistical definition.
 
+## AI Value Discovery Framework (cross-cutting, tiered)
+
+The upstream discovery-and-justification methodology that Phase 1 (topics
+1-6) and part of Phase 3 (topics 13-15, 19) of the Core curriculum below
+draw from. Not a lens — nothing here activates/deactivates, and it isn't
+gated behind a selection step like Lens Selection or Dimension Selection.
+Three tiers, each with its own weekly application discipline:
+
+- **Essential** (Business Process Mapping, User-Centred Discovery, Benefits
+  Mapping & Business Case) — considered on every case, same "whenever the
+  case makes it material" discipline as Evidence & Source Discipline. These
+  underpin the newsletter's "Behind the Engagement" process/problem
+  reconstruction and any value/ROI claim, regardless of which curriculum
+  topic is rotating up that week.
+- **AI-specific** (AI Use-Case Prioritisation) — material whenever the case
+  involved choosing among multiple candidate opportunities rather than
+  executing a single predetermined one; it's curriculum topic 15's
+  (Prioritisation & feasibility) deep-dive.
+- **Government-specific** (Responsible AI & Assurance) — the named
+  frameworks below are UK public-sector references. Apply their underlying
+  questions (data sensitivity, fairness, explainability, oversight,
+  accountability) to any case where the AI system affects decisions about
+  individuals; cite the named frameworks directly when the case itself is
+  UK public sector. It's curriculum topic 19's (Risk, privacy & security)
+  deep-dive.
+
+Any named framework/technique below that becomes newsletter-visible (cited
+in a Further Reading link, or given its own Key Terms slide entry) follows
+the same discipline as every other external link in this project: WebSearch
+for the current official URL at the time of the actual run — never guess or
+reuse a stale one (see the Terminology step and Further Reading section in
+`workflows/weekly_consulting_case.md`).
+
+### 1. Business Process Mapping — Essential
+
+Purpose: understand how work is actually done before proposing improvements.
+Attaches to the reasoning loop's **Process** stage and curriculum topic 4
+(Process mapping).
+
+Techniques: SIPOC, BPMN (Business Process Model and Notation), value stream
+mapping, service blueprints — use these to identify activities, handoffs,
+bottlenecks, rework, manual data entry, and unnecessary steps.
+
+Learn: BPMN — Business Process Model and Notation.
+
+### 2. User-Centred Discovery — Essential
+
+Purpose: understand what users actually need, rather than assuming the
+process owner already knows every problem. Attaches to the reasoning loop's
+**Stakeholders & Objectives** stage and curriculum topic 3 (Discovery
+questions).
+
+Techniques: stakeholder interviews, observation, journey mapping, service
+design, user research — especially load-bearing in government cases, where
+services must meet real user needs.
+
+Learn: GOV.UK Service Manual.
+
+### 3. Benefits Mapping & Business Case — Essential
+
+Purpose: connect a proposed change to measurable benefits and justify the
+investment. Attaches to the reasoning loop's **Value & ROI** stage and
+curriculum topics 13-14 (Value creation; ROI & cost modelling) — and
+directly sharpens the existing ROI/savings evidence checklist (Evidence &
+Source Discipline above): what was the baseline, over what period, does it
+translate into actual financial value.
+
+Techniques: benefits maps, benefits dependency networks, cost-benefit
+analysis, and (UK public sector) the HM Treasury Green Book appraisal
+approach. Explicitly distinguish operational benefit from cash benefit — a
+reduction in review time may free organizational capacity without being an
+automatic cash saving; say so rather than treating the two as equivalent.
+
+Learn: Digital and Data Benefits Framework; HM Treasury Green Book.
+
+### 4. AI Use-Case Prioritisation — AI-specific
+
+Purpose: decide which opportunities are worth investigating first, once more
+than one candidate exists. Attaches to the reasoning loop's
+**Opportunity**/**Options** stages and is curriculum topic 15's
+(Prioritisation & feasibility) deep-dive.
+
+Technique: score each candidate opportunity against business impact,
+feasibility, risk, implementation effort, and strategic alignment (the
+BridgeAI AI Use Case Framework publishes one version of this scoring
+approach) — the same discipline the Case Selection Criteria below apply to
+choosing *this newsletter's* case, applied instead to a client's internal
+portfolio of AI opportunities.
+
+Learn: Innovate UK / BridgeAI — AI Use Case Framework.
+
+### 5. Responsible AI & Assurance — Government-specific
+
+Purpose: assess whether an AI opportunity is safe, lawful, appropriate, and
+capable of being trusted. Attaches to the reasoning loop's **Risk** stage,
+Engineering Dimensions 6 (Security) and 12 (Human oversight), and is
+curriculum topic 19's (Risk, privacy & security) deep-dive.
+
+Considerations: data sensitivity, fairness, explainability, human oversight,
+security, evaluation, accountability.
+
+Learn: Data and AI Ethics Framework; Ethics, Transparency and Accountability
+Framework for Automated Decision-Making. Apply their underlying questions to
+any case touching automated decisions about individuals; cite them directly
+when the case itself is UK public sector.
+
 ## Core curriculum (25 topics, 4 phases)
 
 One topic per week, fixed order, never skipped — a learning *spine*, not a
@@ -615,8 +732,11 @@ weekly content template (see Design Principle above). Tracked via
 **Phase 1 — Business problem understanding**
 1. Evidence & source discipline
 2. Problem framing
-3. Discovery questions
-4. Process mapping
+3. Discovery questions — see AI Value Discovery Framework above,
+   User-Centred Discovery (stakeholder interviews, observation, journey
+   mapping, service design, user research)
+4. Process mapping — see AI Value Discovery Framework above, Business
+   Process Mapping (SIPOC, BPMN, value stream mapping, service blueprints)
 5. Root-cause analysis
 6. Opportunity identification
 
@@ -632,9 +752,13 @@ any one lens, which live in Analytical Lenses above)
 12. Solution architecture (the general spine above)
 
 **Phase 3 — Business value & implementation**
-13. Value creation
-14. ROI & cost modelling
-15. Prioritisation & feasibility
+13. Value creation — see AI Value Discovery Framework above, Benefits
+    Mapping & Business Case (benefits maps, benefits dependency networks)
+14. ROI & cost modelling — see AI Value Discovery Framework above, Benefits
+    Mapping & Business Case (cost-benefit analysis, HM Treasury Green Book)
+15. Prioritisation & feasibility — see AI Value Discovery Framework above,
+    AI Use-Case Prioritisation (impact/feasibility/risk/effort/strategic-fit
+    scoring, e.g. the BridgeAI AI Use Case Framework)
 16. Pilot design
 17. Experimentation & measuring business impact — this week's dedicated
     deep-dive slot, but the underlying question "how do we know it worked?"
@@ -646,7 +770,9 @@ any one lens, which live in Analytical Lenses above)
 18. Human-in-the-loop
 19. Risk, privacy & security — this week's dedicated deep-dive slot, but
     also a standing cross-cutting dimension evaluated whenever a case makes
-    it material (see Cross-cutting dimensions above)
+    it material (see Cross-cutting dimensions above); see AI Value Discovery
+    Framework above, Responsible AI & Assurance for the named UK
+    public-sector reference frameworks
 20. Change management
 
 **Phase 4 — Consulting communication**

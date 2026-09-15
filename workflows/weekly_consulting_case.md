@@ -172,8 +172,10 @@ applies no matter which lens, or no lens, is active.
 Before drafting, decide this week's 2-4 core vocabulary terms relevant to
 this week's curriculum topic *and* any activated lens (e.g. for "Root-cause
 analysis": five whys, fishbone/Ishikawa; for an active ML Decision Lens:
-class imbalance, threshold, drift). For each term, check the Glossary read
-above (case-insensitive match on `term`):
+class imbalance, threshold, drift; for "Process mapping": SIPOC, BPMN — see
+`workflows/consulting_framework.md`'s AI Value Discovery Framework for the
+full set of named techniques these topics draw from). For each term, check
+the Glossary read above (case-insensitive match on `term`):
 
 - **Not yet defined** → give it a full plain-language definition in the
   deck's Key Terms slide, and queue it for `glossary-append` after a
@@ -197,7 +199,14 @@ intervention, outcome.
 
 **02 — Behind the Engagement.** Short subsections: the real problem the
 client needed solved · the current process/workflow · the consultancy's
-approach · the technology · the outcome.
+approach · the technology · the outcome. Reconstruct the problem/process
+subsections through `workflows/consulting_framework.md`'s AI Value Discovery
+Framework — Business Process Mapping and User-Centred Discovery are Essential
+tier, considered on every case regardless of curriculum topic — naming the
+actual technique the evidence supports (e.g. "the public case study
+describes a SIPOC-style handoff between X and Y") rather than a generic
+process description; say so plainly when the source material doesn't
+establish enough to name one.
 
 **03 — Technology Choice.** Brief, business-level: what tool or platform the
 consultancy chose and why (build vs. buy, vendor, category), in a few
