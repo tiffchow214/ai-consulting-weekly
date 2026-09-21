@@ -74,6 +74,16 @@ def test_build_judge_prompt_contains_evidence_labels(newsletter_html_fixture, de
         assert label in prompt
 
 
+def test_build_judge_prompt_forbids_flagging_labeled_caveated_stats(newsletter_html_fixture, deck_json_fixture):
+    """Regression test for a real production false-positive (2026-09-20 run):
+    the judge flagged stats that WERE labeled but carried an honest UNKNOWN/
+    caveat about themselves, treating rigor as a red flag. The prompt must
+    tell the judge a labeled stat is never suspicious, however hedged."""
+    prompt = build_judge_prompt(newsletter_html_fixture, deck_json_fixture)
+    assert "never suspicious" in prompt
+    assert "own honest caveat" in prompt
+
+
 class _FakeMessage:
     def __init__(self, text):
         self.content = [type("Block", (), {"text": text})()]

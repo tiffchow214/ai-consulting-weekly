@@ -134,9 +134,18 @@ prose, matching exactly this shape:
   "notes": "<one sentence, or empty string>"
 }}
 
-An empty list means none found. thin_or_duplicate is true only if the case
-itself looks too thin to support a real analysis, or looks like it's
-rehashing an extremely generic/templated case with no specific client detail.
+An empty list means none found. Only include a statistic in "suspicious_stats"
+if it carries NONE of the five evidence labels anywhere in its immediate
+surrounding text (same bar as "unlabeled_claims" — this field exists purely
+to catch numbers that slipped through with no label at all, not to
+second-guess ones that already have one). A statistic that IS labeled is
+never suspicious, no matter how hedged, uncertain, or heavily caveated that
+label's accompanying text is (e.g. "UNKNOWN — no control group or period
+disclosed" next to a figure is the discipline working correctly, not a
+red flag) — do not flag a claim's own honest caveat about itself as evidence
+of invention. thin_or_duplicate is true only if the case itself looks too
+thin to support a real analysis, or looks like it's rehashing an extremely
+generic/templated case with no specific client detail.
 
 === NEWSLETTER TEXT ===
 {newsletter_text}

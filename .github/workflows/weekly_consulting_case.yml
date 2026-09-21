@@ -63,6 +63,21 @@ jobs:
             --allowedTools "WebSearch WebFetch Bash Read Write Edit" \
             --dangerously-skip-permissions
 
+      - name: Check run actually sent an email
+        run: |
+          if [ ! -f .tmp/run_status.json ]; then
+            echo "::error::No .tmp/run_status.json written — the run did not report an outcome."
+            exit 1
+          fi
+          python3 -c "
+          import json, sys
+          status = json.load(open('.tmp/run_status.json'))
+          if not status.get('email_sent'):
+              print('::error::Run did not send an email: ' + status.get('reason', 'no reason given'))
+              sys.exit(1)
+          print('Email sent successfully:', status.get('case', '(unknown case)'))
+          "
+
       - name: Clean up credentials
         if: always()
         run: rm -f service_account.json .env

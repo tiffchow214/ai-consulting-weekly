@@ -515,6 +515,23 @@ python tools/manage_sheet.py glossary-append \
   --topic "Curriculum Topic"
 ```
 
+## Run status reporting
+
+The unattended CI job cannot tell a genuine send from an aborted run just
+from `claude`'s own exit code — an agent that reasons its way to "abort, do
+not send" per an Edge Case below and stops cleanly still exits 0. To make
+that distinguishable, **the very last action of every run, whatever the
+outcome, is writing `.tmp/run_status.json`**:
+
+- On a successful send: `{"email_sent": true, "week_number": <N>, "date": "YYYY-MM-DD", "case": "<client_or_case>"}`.
+- On any abort (QA gate fails twice, no suitable case found, tracker/glossary
+  write failure after a successful send is NOT an abort — see below, etc.):
+  `{"email_sent": false, "reason": "<one-sentence reason>"}`.
+
+The CI workflow reads this file after the run and fails the job when
+`email_sent` is not `true` — this is what turns a silent no-send week into a
+visible red X in GitHub Actions instead of a misleading green check.
+
 ## Edge cases
 
 - **Weak consultancy case** — find another case or clearly state the
