@@ -60,6 +60,7 @@ jobs:
 
           $(cat workflows/weekly_consulting_case.md)"
           claude -p "$PROMPT" \
+            --model claude-sonnet-5 \
             --allowedTools "WebSearch WebFetch Bash Read Write Edit" \
             --dangerously-skip-permissions
 
